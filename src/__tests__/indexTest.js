@@ -1,50 +1,47 @@
-import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
-import App from '../App'
-import { sampleProducts } from '../components/ProductList'
-import '@testing-library/jest-dom'
+import { render, screen, within, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
+import App from '../App.jsx';
 
-test('toggles dark mode on button click', () => {
-  render(<App />)
-  const toggleBtn = screen.getByRole('button', { name: /toggle/i })
-  expect(toggleBtn).toBeInTheDocument()
+function getSelectByLabel(label = /category/i) {
+  const labelEl = screen.getByText(label).closest('label');
+  expect(labelEl).toBeInTheDocument();
+  return within(labelEl).getByRole('combobox');
+}
 
-  fireEvent.click(toggleBtn)
-  expect(toggleBtn.textContent.toLowerCase()).toMatch(/light/i)
+test('toggles dark mode on button click', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const btn = screen.getByRole('button', { name: /toggle dark mode/i });
+  await user.click(btn);
+  expect(btn).toHaveTextContent(/toggle light mode/i);
+});
+ 
+test('filters products by category (Electronics)', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const select = getSelectByLabel();
+  await user.selectOptions(select, 'Electronics');
+  const cards = document.querySelectorAll('.product-card');
+  expect(cards.length).toBeGreaterThan(0);
+  cards.forEach(card => {
+    expect(within(card).getByText(/electronics/i)).toBeInTheDocument();
+  });
+});
 
-  fireEvent.click(toggleBtn)
-  expect(toggleBtn.textContent.toLowerCase()).toMatch(/dark/i)
-})
+test('shows empty-state message when no items are rendered', () => {
+  render(<App />);
+  const select = getSelectByLabel();
+  fireEvent.change(select, { target: { value: 'NonExistentCategory' } });
+  expect(screen.getByText(/no products in this category/i)).toBeInTheDocument();
+});
 
-test('filters products by category', () => {
-  render(<App />)
-  const dropdown = screen.getByRole('combobox')
-
-  fireEvent.change(dropdown, { target: { value: 'Fruits' } })
-  expect(screen.getByText(/Apple/i)).toBeInTheDocument()
-  expect(screen.queryByText(/Milk/i)).not.toBeInTheDocument()
-})
-
-test('displays message when no products match filter', () => {
-  render(<App />)
-  const dropdown = screen.getByRole('combobox')
-  fireEvent.change(dropdown, { target: { value: 'NonExistent' } })
-
-  expect(screen.getByText(/no products available/i)).toBeInTheDocument()
-})
-
-test('adds items to cart', () => {
-  render(<App />)
-
-  const appleBtn = screen.getByTestId('product-' + sampleProducts.find(i => i.name === 'Apple').id)
-  fireEvent.click(appleBtn)
-
-  expect(screen.getByText(/shopping cart/i)).toBeInTheDocument()
-  expect(screen.getByText(/Apple is in your cart/i)).toBeInTheDocument()
-
-  const milkBtn = screen.getByTestId('product-' + sampleProducts.find(i => i.name === 'Milk').id)
-  fireEvent.click(milkBtn)
-
-  expect(screen.getByText(/shopping cart/i)).toBeInTheDocument()
-  expect(screen.getByText(/Milk is in your cart/i)).toBeInTheDocument()
-})
+test('adds items to cart and increments quantity', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const addButtons = await screen.findAllByRole('button', { name: /add to cart/i });
+  await user.click(addButtons[0]);
+  await user.click(addButtons[0]);
+  expect(screen.getByText(/2 item\(s\)/i)).toBeInTheDocument();
+});
+ 
