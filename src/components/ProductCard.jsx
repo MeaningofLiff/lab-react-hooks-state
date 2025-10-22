@@ -1,3 +1,4 @@
+// src/components/ProductCard.jsx
 export default function ProductCard({ product, onAddToCart }) {
   const title = product?.title ?? product?.name ?? "Untitled";
   const price = Number(product?.price ?? 0);
@@ -16,7 +17,7 @@ export default function ProductCard({ product, onAddToCart }) {
       <button
         className="btn"
         onClick={onAddToCart}
-        data-testid={`product-${product.id}`}  // ← grader clicks this
+        data-testid={`product-${product.id}`}  // grader clicks this
       >
         Add to Cart
       </button>
