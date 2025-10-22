@@ -22,6 +22,7 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [cart, setCart] = useState([]);
   const [category, setCategory] = useState("All");
+  const [lastAdded, setLastAdded] = useState(null); 
  
   const filteredProducts = useMemo(() => {
     if (category === "All") return ALL_PRODUCTS;
@@ -31,16 +32,19 @@ export default function App() {
   const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
 
   const handleAddToCart = (product) => {
-    setCart((prev) => {
-      const existing = prev.find((i) => i.id === product.id);
-      if (existing) {
-        return prev.map((i) =>
-          i.id === product.id ? { ...i, qty: Number(i.qty) + 1 } : i
-        );
-      }
-      return [...prev, { ...product, price: Number(product.price), qty: 1 }];
-    });
-  };
+  setCart((prev) => {
+    const existing = prev.find((i) => i.id === product.id);
+    if (existing) {
+      return prev.map((i) =>
+        i.id === product.id ? { ...i, qty: Number(i.qty) + 1 } : i
+      );
+    }
+    return [...prev, { ...product, price: Number(product.price), qty: 1 }];
+  });
+  // NEW: announce last added
+  const name = product.title ?? product.name;
+  setLastAdded(name);
+}; 
 
   return (
     <div className={darkMode ? "app dark" : "app"}>
@@ -61,11 +65,17 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        <ProductList products={filteredProducts} onAddToCart={handleAddToCart} />
-        <aside className="app-cart">
-          <Cart items={cart} title="Shopping Cart" />
-        </aside>
-      </main>
+  {lastAdded && (
+    <p role="status" aria-live="polite">
+      {lastAdded} is in your cart
+    </p>
+  )}
+
+  <ProductList products={filteredProducts} onAddToCart={handleAddToCart} />
+  <aside className="app-cart">
+    <Cart items={cart} title="Shopping Cart" />
+  </aside>
+</main> 
     </div>
   );
 }
