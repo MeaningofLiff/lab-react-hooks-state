@@ -16,7 +16,7 @@ test('toggles dark mode on button click', async () => {
   await user.click(btn);
   expect(btn).toHaveTextContent(/toggle light mode/i);
 });
-
+ 
 test('filters products by category (Electronics)', async () => {
   const user = userEvent.setup();
   render(<App />);
@@ -33,7 +33,7 @@ test('shows empty-state message when no items are rendered', () => {
   render(<App />);
   const select = getSelectByLabel();
   fireEvent.change(select, { target: { value: 'NonExistentCategory' } });
-  expect(screen.getByText(/no products available/i)).toBeInTheDocument();
+   expect(screen.getByText(/no products available/i)).toBeInTheDocument(); 
 });
 
 test('adds items to cart and increments quantity', async () => {
