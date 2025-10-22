@@ -1,39 +1,30 @@
-export default function Cart({ items = [] }) {
-  // Ensure we always work with an array of numbers
+export default function Cart({ items = [], title = "Cart" }) {
   const safeItems = Array.isArray(items) ? items : [];
-
-  const totalQty = safeItems.reduce((sum, i) => {
-    const qty = Number(i?.qty ?? 0);
-    return sum + (Number.isFinite(qty) ? qty : 0);
-  }, 0);
-
-  const totalPrice = safeItems.reduce((sum, i) => {
-    const qty = Number(i?.qty ?? 0);
-    const price = Number(i?.price ?? 0);
-    const line = (Number.isFinite(qty) ? qty : 0) * (Number.isFinite(price) ? price : 0);
-    return sum + line;
-  }, 0);
+  const totalQty = safeItems.reduce((s, i) => s + Number(i?.qty ?? 0), 0);
+  const totalPrice = safeItems.reduce(
+    (s, i) => s + Number(i?.qty ?? 0) * Number(i?.price ?? 0),
+    0
+  );
 
   return (
     <div className="cart">
-      <h2>Cart</h2>
+      <h2>{title}</h2>
       <p className="muted">
         {totalQty === 0 ? "Your cart is empty." : `${totalQty} item(s)`}
       </p>
 
       <ul className="cart__list">
-        {safeItems.map((item) => {
+        {safeItems.map((item, idx) => {
           const qty = Number(item?.qty ?? 0);
           const price = Number(item?.price ?? 0);
-          const lineTotal = qty * price;
-
+          const line = qty * price;
           return (
-          <li key={item.id ?? `row-${index}`} className="cart__row"> 
+            <li key={item.id ?? `row-${idx}`} className="cart__row">
               <div>
-                <strong>{item?.title ?? "Untitled item"}</strong>
+                <strong>{item?.title ?? item?.name ?? "Untitled item"}</strong>
                 <div className="muted">x{qty}</div>
               </div>
-              <div>${Number.isFinite(lineTotal) ? lineTotal.toFixed(2) : "0.00"}</div>
+              <div>${Number.isFinite(line) ? line.toFixed(2) : "0.00"}</div>
             </li>
           );
         })}
